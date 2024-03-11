@@ -1,17 +1,12 @@
-## My Project
+## Amazon MQ - Code Samples
 
-TODO: Fill this README out!
 
-Be sure to:
+This repository contains code samples related to [Amazon MQ Service](https://aws.amazon.com/amazon-mq/) for
+both Amazon MQ for ActiveMQ and Amazon MQ for RabbitMQ
+These code samples are used in AWS blog posts and tutorials.
 
-* Change the title in this README
-* Edit your repository description on GitHub
+Currently, the following samples are hosted in this repository:
 
-## Security
-
-See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
-
-## License
-
-This library is licensed under the MIT-0 License. See the LICENSE file.
-
+| Code                             | Tutorial/Blog |
+|----------------------------------|---------------|
+| JMS 2.0 Transactions in ActiveMQ | [TBD](TBD)    |

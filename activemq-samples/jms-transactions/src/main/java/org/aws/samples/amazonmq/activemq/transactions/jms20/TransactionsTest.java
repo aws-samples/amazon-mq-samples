@@ -78,9 +78,10 @@ public class TransactionsTest {
                 count++;
                 enumeration.nextElement();
             }
-        } finally {
-            return count;
+        } catch (Exception e){
+            return 0;
         }
+        return count;
     }
 
     private static boolean isNullOrEmpty(String str) {

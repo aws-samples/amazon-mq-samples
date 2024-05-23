@@ -3,6 +3,8 @@ package org.aws.samples.amazonmq.activemq.transactions.jms20;
 import jakarta.jms.*;
 import org.apache.activemq.ActiveMQConnectionFactory;
 
+import java.util.Enumeration;
+
 public class TransactionsTest {
     public static void main(String[] args) {
         String commandInstructions = "Provide all the arguments in the required format";
@@ -34,13 +36,17 @@ public class TransactionsTest {
 
         ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(brokerSSLEndpoint);
         JMSContext jmsContext = connectionFactory.createContext(adminUsername, adminPassword, Session.SESSION_TRANSACTED);
+        Queue firstQueue = jmsContext.createQueue(firstQueueName);
+        Queue secondQueue = jmsContext.createQueue(secondQueueName);
+        QueueBrowser firstQueueBrowser = jmsContext.createBrowser(firstQueue);
+        QueueBrowser secondQueueBrowser = jmsContext.createBrowser(secondQueue);
+
         try{
             JMSProducer producer = jmsContext.createProducer();
-            Queue warehouseQueue = jmsContext.createQueue(firstQueueName);
-            Queue shippingQueue = jmsContext.createQueue(secondQueueName);
-
+            System.out.println("Number of messages in " + firstQueueName + " : " + getNumberOfMessagesInQueue(firstQueueBrowser));
+            System.out.println("Number of messages in " + secondQueueName + " : " + getNumberOfMessagesInQueue(secondQueueBrowser));
             //Send message to warehouse queue
-            producer.send(warehouseQueue, "PREPARE ORDERID " + orderId);
+            producer.send(firstQueue, "PREPARE ORDERID " + orderId);
             System.out.println("Order ID "+ orderId +" sent to the warehouse queue");
 
             if(!Boolean.parseBoolean(isSuccessfulTransaction)){
@@ -48,15 +54,32 @@ public class TransactionsTest {
             }
 
             //Send message to shipping queue
-            producer.send(shippingQueue, "SHIP ORDERID " + orderId);
+            producer.send(secondQueue, "SHIP ORDERID " + orderId);
             System.out.println("Order ID "+ orderId +" sent to the shipping queue");
             jmsContext.commit();
             System.out.println("Order ID " + orderId + " is now complete");
+            System.out.println("Number of messages in " + firstQueueName + " : " + getNumberOfMessagesInQueue(firstQueueBrowser));
+            System.out.println("Number of messages in " + secondQueueName + " : " + getNumberOfMessagesInQueue(secondQueueBrowser));
         }catch (Exception e){
             jmsContext.rollback();
             System.out.println("Order ID " + orderId + " cannot be completed hence the transaction is rolled back");
+            System.out.println("Number of messages in " + firstQueueName + " : " + getNumberOfMessagesInQueue(firstQueueBrowser));
+            System.out.println("Number of messages in " + secondQueueName + " : " + getNumberOfMessagesInQueue(secondQueueBrowser));
         }finally {
             jmsContext.close();
+        }
+    }
+
+    private static int getNumberOfMessagesInQueue(QueueBrowser firstQueueBrowser) {
+        int count = 0;
+        try {
+            Enumeration enumeration = firstQueueBrowser.getEnumeration();
+            while (enumeration.hasMoreElements()) {
+                count++;
+                enumeration.nextElement();
+            }
+        } finally {
+            return count;
         }
     }
 

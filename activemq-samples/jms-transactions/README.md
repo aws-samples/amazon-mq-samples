@@ -1,8 +1,9 @@
 # AmazonMQ ActiveMQ JMS Transaction Sample Client
 
-This code repository provides sample clients for using 
-JMS (Java Message Service) transactions with [AmazonMQ for ActiveMQ](https://aws.amazon.com/amazon-mq/).
-
+This code repository provides sample JMS client for using [Java Messaging Services(JMS) transactions API](https://activemq.apache.org/components/classic/documentation/how-do-transactions-work) with [AmazonMQ for ActiveMQ](https://aws.amazon.com/amazon-mq/).
+A valid transaction involves sending two messages one each for a different queue 
+- Both the messages are successfully delivered if the transaction is successful.
+- None of the messages are sent to the broker if there is any error during the transaction.
 
 # Prerequisites
 To run the samples you will need to create the AmazonMQ ActiveMQ broker 5.18.4 or higher

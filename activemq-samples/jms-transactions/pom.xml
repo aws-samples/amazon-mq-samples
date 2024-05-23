@@ -38,7 +38,6 @@
       </plugin>
     </plugins>
   </build>
-
   <dependencies>
     <dependency>
       <groupId>org.apache.activemq</groupId>
@@ -52,6 +51,4 @@
       <scope>runtime</scope>
     </dependency>
   </dependencies>
-
-
 </project>

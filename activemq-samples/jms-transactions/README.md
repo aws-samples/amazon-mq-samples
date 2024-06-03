@@ -10,12 +10,13 @@ To run the samples you will need to create the AmazonMQ ActiveMQ broker 5.18.4 o
 1. Java 11 or above. ActiveMQ 5.18+ require Java 11 or above. 
 2. Apache Maven is required to build project. Install it from https://maven.apache.org/ 
 3. Install and configure AWS Command Line Interface(CLI) using instructions [here](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
-4. If you don't have the AmazonMQ for ActiveMQ broker then create as per the instructions below
+4. Ensure that you have an IAM Principal(user/role) with [AmazonMQFullAccess](https://docs.aws.amazon.com/aws-managed-policy/latest/reference/AmazonMQFullAccess.html) policy attached to the users
+5. If you don't have the AmazonMQ for ActiveMQ broker then create as per the instructions below
 
 ## Creating the AmazonMQ ActiveMQ Broker
 
-1. Create a user with [AmazonMQFullAccess](https://docs.aws.amazon.com/aws-managed-policy/latest/reference/AmazonMQFullAccess.html) policy attached to the users
-2. To create the broker using command line. Run the following command
+
+1. To create the broker using command line. Run the following command
 ```
 aws mq create-broker \
  --broker-name test-broker-create-using-cli \
@@ -25,17 +26,15 @@ aws mq create-broker \
  --host-instance-type mq.m5.large \
  --auto-minor-version-upgrade \
  --publicly-accessible \
- --users Username=<username>,Password=<PASSWORD>,ConsoleAccess=true
+ --users Username=<USERNAME>,Password=<PASSWORD>,ConsoleAccess=true
 ```
 - Replace the value of `--engine-version` with the version of your choice. Code samples in this repo support ActiveMQ 5.18.x and above.
-- Replace and `<PASSWORD>` with a secure password value. This is the password you will use to log in to ActivMQ Management Console.
-3. Note down the value of `BrokerArn` and `BrokerId`. This will be needed for running the sample
-4. Get the console URL by running the following command
-
+- Replace `<USERNAME>` and `<PASSWORD>` with actual values for username and password of your choice. These are the credentials you will use to Login to ActiveMQ Management console.
+2. The successful invocation of the above command will return with the value of `BrokerArn` and `BrokerId`. Note down these values and they will be needed for running the sample code.
+3. Get the console URL by running the following command
 ```aws mq describe-broker --broker-id <BROKER-ID> --query 'BrokerInstances[0]’```
-
-Replace `<BROKER-ID` with the value you received in the previous step. Copy the response in a text file. This too you will need in subsequent steps
-5. Next step is to add security group inbound rule for you to be able to access ActiveMQ management console via browser
+Replace `<BROKER-ID` with the value you received in the previous step. Copy the response in a text file. This too you will need in subsequent steps.
+4. Next step is to add security group inbound rule for you to be able to access ActiveMQ management console via browser
    1. Find your public IP. You can do by going to https://whatismyipaddress.com/ and copying your IPV4
    2. Find the security group id of your broker by running the following command ```aws mq describe-broker --broker-id b-ba74038f-fef5-435f-a417-cb79c7d8c680 --query 'SecurityGroups[0]'```. Copy the security group ID
    3. To access the admin console via web browser the inbound rule to the security group by running the following command. Replace <SECURITY_GROUP_ID> and <YOUR_PUBLIC_IP> with the values you copied above

@@ -7,6 +7,6 @@ These code samples are used in AWS blog posts and tutorials.
 
 Currently, the following samples are hosted in this repository:
 
-| Code                             | Tutorial/Blog |
-|----------------------------------|---------------|
-| JMS 2.0 Transactions in ActiveMQ | [TBD](TBD)    |
+| Code                                 | Tutorial/Blog |
+|--------------------------------------|---------------|
+| [JMS 2.0 Transactions in ActiveMQ](https://github.com/aws-samples/amazon-mq-samples/tree/main/activemq-samples/jms-transactions) | [TBD](TBD)    |

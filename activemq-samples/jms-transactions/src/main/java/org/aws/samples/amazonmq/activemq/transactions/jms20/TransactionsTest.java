@@ -3,8 +3,6 @@ package org.aws.samples.amazonmq.activemq.transactions.jms20;
 import jakarta.jms.*;
 import org.apache.activemq.ActiveMQConnectionFactory;
 
-import java.util.Enumeration;
-
 public class TransactionsTest {
     public static void main(String[] args) {
         String commandInstructions = "Provide all the arguments in the required format";
@@ -39,22 +37,15 @@ public class TransactionsTest {
 
         Queue firstQueue = jmsContext.createQueue(firstQueueName);
         Queue secondQueue = jmsContext.createQueue(secondQueueName);
-        QueueBrowser firstQueueBrowser = jmsContext.createBrowser(firstQueue);
-        QueueBrowser secondQueueBrowser = jmsContext.createBrowser(secondQueue);
 
         try{
             JMSProducer producer = jmsContext.createProducer();
-            System.out.println("------");
-            System.out.println("Number of messages in " + firstQueueName + " : " + getNumberOfMessagesInQueue(firstQueueBrowser));
-            System.out.println("Number of messages in " + secondQueueName + " : " + getNumberOfMessagesInQueue(secondQueueBrowser));
-            System.out.println("------");
+
             //Send message to the first queue
             System.out.println("Sending message: " + message + " to the " + firstQueueName);
             producer.send(firstQueue, message);
             System.out.println("Message: "+ message +" is sent to the queue: " + firstQueueName + " but not yet committed.");
-            System.out.println("Number of messages in " + firstQueueName + " : " + getNumberOfMessagesInQueue(firstQueueBrowser));
-            System.out.println("Number of messages in " + secondQueueName + " : " + getNumberOfMessagesInQueue(secondQueueBrowser));
-            System.out.println("------");
+            Thread.sleep(15000);
             //If transaction fails then just throw the exception
             if(!Boolean.parseBoolean(isSuccessfulTransaction)){
                 throw new Exception();
@@ -64,38 +55,19 @@ public class TransactionsTest {
             System.out.println("Sending message: " + message + " to the " + secondQueueName);
             producer.send(secondQueue, message);
             System.out.println("Message: "+ message +" is sent to the queue: " + secondQueueName + " but not yet committed.");
-            System.out.println("Number of messages in " + firstQueueName + " : " + getNumberOfMessagesInQueue(firstQueueBrowser));
-            System.out.println("Number of messages in " + secondQueueName + " : " + getNumberOfMessagesInQueue(secondQueueBrowser));
-            System.out.println("------");
+            Thread.sleep(15000);
+
             System.out.println("Committing");
             //Only when both the messages are successful commit the transaction
             jmsContext.commit();
 
             System.out.println("Transaction for Message: " + message + " is now completely committed.");
-            System.out.println("Number of messages in " + firstQueueName + " : " + getNumberOfMessagesInQueue(firstQueueBrowser));
-            System.out.println("Number of messages in " + secondQueueName + " : " + getNumberOfMessagesInQueue(secondQueueBrowser));
         }catch (Exception e){
             jmsContext.rollback();
             System.out.println("Message: " + message + " cannot be delivered because of an unknown error. Hence the transaction is rolled back.");
-            System.out.println("Number of messages in " + firstQueueName + " : " + getNumberOfMessagesInQueue(firstQueueBrowser));
-            System.out.println("Number of messages in " + secondQueueName + " : " + getNumberOfMessagesInQueue(secondQueueBrowser));
         }finally {
             jmsContext.close();
         }
-    }
-
-    private static int getNumberOfMessagesInQueue(QueueBrowser queueBrowser) {
-        int count = 0;
-        try {
-            Enumeration enumeration = queueBrowser.getEnumeration();
-            while (enumeration.hasMoreElements()) {
-                count++;
-                enumeration.nextElement();
-            }
-        } catch (Exception e){
-            return 0;
-        }
-        return count;
     }
 
     private static boolean isNullOrEmpty(String str) {

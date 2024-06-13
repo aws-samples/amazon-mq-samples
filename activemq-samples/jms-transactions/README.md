@@ -105,9 +105,9 @@ To run the samples you will need to create the AmazonMQ ActiveMQ broker 5.18.4 o
 
 
 ## Clean Up
-1. Delete the broker by running the following command
-   `aws mq delete-broker --broker-id <BROKER-ID>`
-   Replace `<BROKER-ID>` with the value you noted down in the previous step.
+Delete the broker by running the following command `aws mq delete-broker --broker-id <BROKER-ID>`. 
+
+Replace `<BROKER-ID>` with the value you noted down in the previous step.
 
 ## Code of Conduct
 

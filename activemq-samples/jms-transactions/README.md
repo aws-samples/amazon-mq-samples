@@ -13,7 +13,7 @@ message is sent to the second queue.
 
 See this FAQ
 on [How Do Transactions Work with Active MQ](https://activemq.apache.org/components/classic/documentation/how-do-transactions-work).
-Also, check out [this blog post](TBD) to learn about JMS2.0 support in AmazonMQ for ActiveMQ. 
+ 
 
 # Step 0: Prerequisites
 

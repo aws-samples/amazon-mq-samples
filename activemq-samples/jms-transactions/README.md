@@ -19,14 +19,12 @@ on [How Do Transactions Work with Active MQ](https://activemq.apache.org/compone
 
 To run the samples you will need to create the AmazonMQ ActiveMQ broker 5.18.4 or higher
 
-1. Java 11 or above. ActiveMQ 5.18+ require Java 11 or above.
-2. Apache Maven is required to build project. Install it from https://maven.apache.org/
+1. ActiveMQ 5.18+ require Java 11 or above. [Install it using instructions here](https://www.java.com/en/download/help/download_options.html).
+2. Apache Maven is required to build the project. Install it from https://maven.apache.org/
 3. Install and configure AWS Command Line Interface(CLI) using
-   instructions [here](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+   instructions [here](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html#getting-started-install-instructions)
 4. Ensure that you have an IAM Principal(user/role)
-   with [AmazonMQFullAccess](https://docs.aws.amazon.com/aws-managed-policy/latest/reference/AmazonMQFullAccess.html)
-   policy attached to the users
-5. If you don't have the AmazonMQ for ActiveMQ broker then create as per the instructions below
+   with [AmazonMQFullAccess](https://docs.aws.amazon.com/aws-managed-policy/latest/reference/AmazonMQFullAccess.html) policy attached.
 
 ## Step 1: Create the AmazonMQ ActiveMQ Broker
 
@@ -88,7 +86,7 @@ To run the samples you will need to create the AmazonMQ ActiveMQ broker 5.18.4 o
    This will create a new jar file with name starting with `amazonmq-samples-` under the `target/` directory
 
 4. We are ready to test transactional capabilities for our sample. To test, you can test the transactions by sending messages to the broker using the following command
-   `java -jar target/amazonmq-samples-1.0.jar <USERNAME> <PASSWORD> <BROKER-URL> <first-queue-name> <second-queue-name> <message> <is-transaction-succesful>`
+   `java -jar target/amazonmq-samples-1.0.jar <USERNAME> <PASSWORD> <BROKER-URL> <first-queue-name> <second-queue-name> <message> <is-transaction-successful>`
    
    Where
    - `target/amazonmq-samples-1.0.jar` is the path to the jar you created in earlier step.

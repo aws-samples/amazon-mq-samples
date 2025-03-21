@@ -83,7 +83,7 @@ Resources:
     DependsOn: AttachGateway
     Properties:
       RouteTableId: !Ref 'RouteTable'
-      DestinationCidrBlock: '0.0.0.0/0'
+      DestinationCidrBlock: '10.0.0.0/16'
       GatewayId: !Ref 'InternetGateway'
   PublicSubnet:
     Type: AWS::EC2::Subnet
@@ -146,11 +146,10 @@ Resources:
         - - "AmazonMQSamplesBroker"
           - !Ref AWS::StackName
       EngineType: ActiveMQ
-      EngineVersion: 5.17.6
+      EngineVersion: 5.18
       HostInstanceType: mq.t3.micro
       DeploymentMode: SINGLE_INSTANCE
       PubliclyAccessible: true
-      AutoMinorVersionUpgrade: false
       SecurityGroups:
         - !Ref 'AmazonMQSecurityGroup'
       SubnetIds:

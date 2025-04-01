@@ -23,7 +23,7 @@ terraform init
 
 2. Create a `terraform.tfvars` file with your variables:
 ```hcl
-aws_region   = "us-west-2"
+aws_region   = "us-east-1"
 broker_name  = "my-activemq-broker"
 mq_username  = "admin"
 mq_password  = "your-secure-password"

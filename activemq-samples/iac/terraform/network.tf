@@ -9,13 +9,24 @@ resource "aws_vpc" "mq_vpc" {
   }
 }
 
-resource "aws_subnet" "mq_subnet" {
+resource "aws_subnet" "mq_subnet_1" {
   vpc_id            = aws_vpc.mq_vpc.id
   cidr_block        = "10.0.1.0/24"
   availability_zone = "${var.aws_region}a"
 
   tags = {
-    Name        = "mq-subnet"
+    Name        = "mq-subnet-1"
+    Environment = var.environment
+  }
+}
+
+resource "aws_subnet" "mq_subnet_2" {
+  vpc_id            = aws_vpc.mq_vpc.id
+  cidr_block        = "10.0.2.0/24"
+  availability_zone = "${var.aws_region}b"
+
+  tags = {
+    Name        = "mq-subnet-2"
     Environment = var.environment
   }
 }

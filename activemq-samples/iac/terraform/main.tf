@@ -17,9 +17,9 @@ resource "aws_mq_broker" "activemq_broker" {
   engine_type        = "ActiveMQ"
   engine_version     = "5.18"
   host_instance_type = var.instance_type
+  deployment_mode    = "ACTIVE_STANDBY_MULTI_AZ"
   security_groups    = [aws_security_group.mq_security_group.id]
-  subnet_ids         = [aws_subnet.mq_subnet.id]
-  # Add this line
+  subnet_ids         = [aws_subnet.mq_subnet_1.id, aws_subnet.mq_subnet_2.id]
   auto_minor_version_upgrade = true
 
   user {
@@ -44,3 +44,4 @@ resource "aws_mq_broker" "activemq_broker" {
     Environment = var.environment
   }
 }
+

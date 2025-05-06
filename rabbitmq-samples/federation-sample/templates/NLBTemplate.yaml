@@ -1,0 +1,127 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: AWS CloudFormation template to create NLB from IP Address
+Parameters:
+  Stage:
+    Type: String
+    Default: DEV
+    Description: The stage into we deploy this template.
+  UpstreamBrokerIPAddress:
+    Description: IP Address of the upstream broker AMQP endpoint
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})'
+    Type: String
+  DownstreamBrokerNATIPCIDR:
+    Description: CIDR for the NAT IP Address of the downstream broker provided by AWS Support
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
+    Type: String
+Resources:
+  NLBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: NLB Security Group
+      VpcId: {'Fn::ImportValue': !Sub '${Stage}:UpstreamVPCId'}
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: !Ref DownstreamBrokerNATIPCIDR
+        - IpProtocol: tcp
+          FromPort: 5671
+          ToPort: 5671
+          CidrIp: !Ref DownstreamBrokerNATIPCIDR
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: {'Fn::ImportValue': !Sub '${Stage}:UpstreamVPCCIDRBlock'}
+        - IpProtocol: tcp
+          FromPort: 5671
+          ToPort: 5671
+          CidrIp: {'Fn::ImportValue': !Sub '${Stage}:UpstreamVPCCIDRBlock'} 
+  InboundRuleUpstreamDefaultSG443:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+      SourceSecurityGroupId: !GetAtt NLBSecurityGroup.GroupId
+      GroupId: {'Fn::ImportValue': !Sub '${Stage}:UpstreamVPCDefaultSecurityGroupId'}
+  InboundRuleUpstreamDefaultSG5671:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      IpProtocol: tcp
+      FromPort: 5671
+      ToPort: 5671
+      SourceSecurityGroupId: !GetAtt NLBSecurityGroup.GroupId
+      GroupId: {'Fn::ImportValue': !Sub '${Stage}:UpstreamVPCDefaultSecurityGroupId'}       
+  NetworkLoadBalancer:
+    Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
+    Properties:
+      Name: MyUpstreamNLB
+      Scheme: internet-facing
+      SecurityGroups: 
+        - !Ref NLBSecurityGroup
+      Subnets:
+        - {'Fn::ImportValue': !Sub '${Stage}:UpstreamVPCPublicSubnetId'}
+      Type: network
+  NetworkLoadBalancerTargetGroupMQ:
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      Name: TG-MQ-Upstream
+      Port: 5671
+      Protocol: TCP
+      VpcId: {'Fn::ImportValue': !Sub '${Stage}:UpstreamVPCId'}
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPort: 5671
+      HealthCheckProtocol: TCP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 3
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: 60
+      Targets:
+        - Id: !Ref UpstreamBrokerIPAddress
+          Port: 5671
+      TargetType: ip
+  NetworkLoadBalancerTargetGroupWeb:
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      Name: TG-MQ-Upstream-Web
+      Port: 443
+      Protocol: TCP
+      VpcId: {'Fn::ImportValue': !Sub '${Stage}:UpstreamVPCId'}
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPort: 443
+      HealthCheckProtocol: TCP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 3
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: 60
+      Targets:
+        - Id: !Ref UpstreamBrokerIPAddress
+          Port: 443
+      TargetType: ip
+  NetworkLoadBalancerListenerMQ:
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref NetworkLoadBalancerTargetGroupMQ
+      LoadBalancerArn: !Ref NetworkLoadBalancer
+      Port: '5671'
+      Protocol: TCP
+  NetworkLoadBalancerListenerWeb:
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref NetworkLoadBalancerTargetGroupWeb
+      LoadBalancerArn: !Ref NetworkLoadBalancer
+      Port: '443'
+      Protocol: TCP
+Outputs:
+  UpstreamBrokerNLBURL:
+    Description: NLB DNS Name
+    Value: !GetAtt NetworkLoadBalancer.DNSName

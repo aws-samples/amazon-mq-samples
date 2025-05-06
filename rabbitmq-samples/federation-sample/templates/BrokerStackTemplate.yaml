@@ -1,0 +1,410 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  AWS CloudFormation template to create 2 VPCs and public and private subnets in
+  each VPC along with private AmazonMQ-RabbitMQ brokers in the private subnets
+Parameters:
+  Stage:
+    Type: String
+    Default: DEV
+    Description: The stage into we deploy this template.
+  DownstreamVPCCIDRBlock:
+    Type: String
+    Default: 10.1.0.0/16
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(/([0-9]|[1-2][0-9]|3[0-2]))$
+    Description: CIDR Block for the downstream VPC that is created for downstream broker
+  UpstreamVPCCIDRBlock:
+    Type: String
+    Default: 10.0.0.0/16
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(/([0-9]|[1-2][0-9]|3[0-2]))$
+    Description: CIDR Block for the upstream VPC that is created for upstream broker
+  DownstreamPublicSubnetCIDR:
+    Type: String
+    Default: 10.1.0.0/21
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(/([0-9]|[1-2][0-9]|3[0-2]))$
+    Description: CIDR Block for the public subnet in the downstream VPC
+  UpstreamPublicSubnetCIDR:
+    Type: String
+    Default: 10.0.0.0/24
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(/([0-9]|[1-2][0-9]|3[0-2]))$
+    Description: CIDR Block for the public subnet in the upstream VPC
+  DownstreamPrivateSubnetCIDR:
+    Type: String
+    Default: 10.1.8.0/21
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(/([0-9]|[1-2][0-9]|3[0-2]))$
+    Description: CIDR Block for the private subnet in the downstream VPC
+  UpstreamPrivateSubnetCIDR:
+    Type: String
+    Default: 10.0.1.0/24
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(/([0-9]|[1-2][0-9]|3[0-2]))$
+    Description: CIDR Block for the private subnet in the upstream VPC
+  PrivateUpstreamBrokerUsername:
+    Description: >-
+      The admin username for RabbitMQ for the Private Upstream Broker(Can't
+      contain commas, colons, equals signs, or spaces)
+    Type: String
+    Default: upstreamuser
+    MinLength: 12
+  PrivateDownstreamBrokerUsername:
+    Description: >-
+      The admin username for RabbitMQ for the Private Downstream Broker(Can't
+      contain commas, colons, equals signs, or spaces)
+    Type: String
+    Default: downstreamuser
+    MinLength: 12
+  LatestAmiId:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64'
+Mappings:
+  RegionMap:
+    us-east-1:
+      PrefixListId: pl-0e4bcff02b13bef1e
+    us-west-1:
+      PrefixListId: pl-0e99958a47b22d6ab
+    us-west-2:
+      PrefixListId: pl-047d464325e7bf465
+    eu-west-1:
+      PrefixListId: pl-0839cc4c195a4e751
+    ap-south-1:
+      PrefixListId: pl-0fa83cebf909345ca
+Resources:
+  DownstreamVPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: !Ref DownstreamVPCCIDRBlock
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: MyDownstreamVPC
+  DownstreamVPCPublicSubnet:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      CidrBlock: !Ref DownstreamPublicSubnetCIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: PublicSubnet1
+      VpcId:
+        Ref: DownstreamVPC
+      AvailabilityZone: 
+        Fn::Select: 
+          - 0
+          - Fn::GetAZs: ""
+  DownstreamVPCPublicSubnetRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId:
+        Ref: DownstreamVPC
+  DownstreamVPCPublicSubnetRouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      RouteTableId:
+        Ref: DownstreamVPCPublicSubnetRouteTable
+      SubnetId:
+        Ref: DownstreamVPCPublicSubnet
+  DownstreamVPCPublicSubnetDefaultRoute:
+    Type: 'AWS::EC2::Route'
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: DownstreamVPCIGW
+      RouteTableId:
+        Ref: DownstreamVPCPublicSubnetRouteTable
+    DependsOn:
+      - DownstreamVPCVPCGW
+  DownstreamVPCPrivateSubnet:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      CidrBlock: !Ref DownstreamPrivateSubnetCIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: PrivateSubnet1
+      VpcId:
+        Ref: DownstreamVPC
+      AvailabilityZone: 
+        Fn::Select: 
+          - 0
+          - Fn::GetAZs: ""
+  DownstreamVPCPrivateSubnetRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId:
+        Ref: DownstreamVPC
+  DownstreamVPCPrivateSubnetRouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      RouteTableId:
+        Ref: DownstreamVPCPrivateSubnetRouteTable
+      SubnetId:
+        Ref: DownstreamVPCPrivateSubnet
+  DownstreamVPCIGW:
+    Type: 'AWS::EC2::InternetGateway'
+  DownstreamVPCVPCGW:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      InternetGatewayId:
+        Ref: DownstreamVPCIGW
+      VpcId:
+        Ref: DownstreamVPC
+  DownstreamMQSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Limits security group ingress and egress traffic for the Amazon MQ downstream broker
+      VpcId: !Ref 'DownstreamVPC'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: !Ref 'DownstreamVPCCIDRBlock'
+        - IpProtocol: tcp
+          FromPort: 5671
+          ToPort: 5671
+          CidrIp: !Ref 'DownstreamVPCCIDRBlock'
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: !Ref 'UpstreamVPCCIDRBlock'
+        - IpProtocol: tcp
+          FromPort: 5671
+          ToPort: 5671
+          CidrIp: !Ref 'UpstreamVPCCIDRBlock'
+  MyPrivateDownstreamBroker:
+    Type: 'AWS::AmazonMQ::Broker'
+    Properties:
+      BrokerName: MyPrivateDownstreamBroker
+      DeploymentMode: SINGLE_INSTANCE
+      EngineType: RABBITMQ
+      HostInstanceType: mq.t3.micro
+      PubliclyAccessible: false
+      SecurityGroups:
+        - !Ref DownstreamMQSecurityGroup
+      SubnetIds:
+        - Ref: DownstreamVPCPrivateSubnet
+      Users:
+        - Password: '{{resolve:secretsmanager:DownstreamBrokerUsernamePassword:SecretString:password}}'
+          Username: '{{resolve:secretsmanager:DownstreamBrokerUsernamePassword:SecretString:username}}'
+    DependsOn:
+      - DownstreamVPCPrivateSubnet
+      - DownstreamBrokerUsernamePassword
+  EC2SecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: EC2SecurityGroup
+      VpcId: !GetAtt DownstreamVPC.VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          SourcePrefixListId: !FindInMap [RegionMap, !Ref "AWS::Region", "PrefixListId"]
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: !Ref 'DownstreamVPCCIDRBlock'
+  InboundRuleDownstreamDefaultSG:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+      SourceSecurityGroupId: !GetAtt EC2SecurityGroup.GroupId
+      GroupId: !GetAtt DownstreamVPC.DefaultSecurityGroup
+  MyDownstreamEC2Instance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      ImageId: !Ref LatestAmiId
+      InstanceType: t2.micro
+      SubnetId: !Ref DownstreamVPCPublicSubnet
+      SecurityGroupIds:
+        - Ref: EC2SecurityGroup
+  UpstreamVPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: !Ref UpstreamVPCCIDRBlock
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: MyUpstreamVPC
+  UpstreamVPCPublicSubnet:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      CidrBlock: !Ref UpstreamPublicSubnetCIDR
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: PublicSubnet2
+      VpcId:
+        Ref: UpstreamVPC
+      AvailabilityZone: 
+        Fn::Select: 
+          - 0
+          - Fn::GetAZs: ""
+  UpstreamVPCPublicSubnetRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId:
+        Ref: UpstreamVPC
+  UpstreamVPCPublicSubnetRouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      RouteTableId:
+        Ref: UpstreamVPCPublicSubnetRouteTable
+      SubnetId:
+        Ref: UpstreamVPCPublicSubnet
+  UpstreamVPCPublicSubnetDefaultRoute:
+    Type: 'AWS::EC2::Route'
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: UpstreamVPCIGW
+      RouteTableId:
+        Ref: UpstreamVPCPublicSubnetRouteTable
+    DependsOn:
+      - UpstreamVPCVPCGW
+  UpstreamVPCPrivateSubnet:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      CidrBlock: !Ref UpstreamPrivateSubnetCIDR
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: PrivateSubnet2
+      VpcId:
+        Ref: UpstreamVPC
+      AvailabilityZone: 
+        Fn::Select: 
+          - 0
+          - Fn::GetAZs: ""
+  UpstreamVPCPrivateSubnetRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId:
+        Ref: UpstreamVPC
+  UpstreamVPCPrivateSubnetRouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      RouteTableId:
+        Ref: UpstreamVPCPrivateSubnetRouteTable
+      SubnetId:
+        Ref: UpstreamVPCPrivateSubnet
+  UpstreamVPCIGW:
+    Type: 'AWS::EC2::InternetGateway'
+  UpstreamVPCVPCGW:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      InternetGatewayId:
+        Ref: UpstreamVPCIGW
+      VpcId:
+        Ref: UpstreamVPC
+  UpstreamMQSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Limits security group ingress and egress traffic for the Amazon MQ upstream broker
+      VpcId: !Ref 'UpstreamVPC'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: !Ref 'UpstreamVPCCIDRBlock'
+        - IpProtocol: tcp
+          FromPort: 5671
+          ToPort: 5671
+          CidrIp: !Ref 'UpstreamVPCCIDRBlock'
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: !Ref 'DownstreamVPCCIDRBlock'
+        - IpProtocol: tcp
+          FromPort: 5671
+          ToPort: 5671
+          CidrIp: !Ref 'DownstreamVPCCIDRBlock'
+  MyPrivateUpstreamBroker:
+    Type: 'AWS::AmazonMQ::Broker'
+    Properties:
+      BrokerName: MyPrivateUpstreamBroker
+      DeploymentMode: SINGLE_INSTANCE
+      EngineType: RABBITMQ
+      HostInstanceType: mq.t3.micro
+      PubliclyAccessible: false
+      SecurityGroups:
+        - !Ref UpstreamMQSecurityGroup
+      SubnetIds:
+        - Ref: UpstreamVPCPrivateSubnet
+      Users:
+        - Password: '{{resolve:secretsmanager:UpstreamBrokerUsernamePassword:SecretString:password}}'
+          Username: '{{resolve:secretsmanager:UpstreamBrokerUsernamePassword:SecretString:username}}'
+    DependsOn:
+      - UpstreamVPCPrivateSubnet
+      - UpstreamBrokerUsernamePassword
+  DownstreamBrokerUsernamePassword:
+    Type: 'AWS::SecretsManager::Secret'
+    Properties:
+      Name: DownstreamBrokerUsernamePassword
+      Description: "Username and Password for accessing Downstream Broker"
+      GenerateSecretString:
+        SecretStringTemplate: !Join
+          - ''
+          - - '{"username": "'
+            - !Ref PrivateDownstreamBrokerUsername
+            - '"}'
+        GenerateStringKey: "password"
+        PasswordLength: 15
+        ExcludePunctuation: true
+        IncludeSpace: false
+        RequireEachIncludedType: true        
+  UpstreamBrokerUsernamePassword:
+    Type: 'AWS::SecretsManager::Secret'
+    Properties:
+      Name: UpstreamBrokerUsernamePassword
+      Description: "Username and Password for accessing Upstream Broker"
+      GenerateSecretString:
+        SecretStringTemplate: !Join
+          - ''
+          - - '{"username": "'
+            - !Ref PrivateUpstreamBrokerUsername
+            - '"}'
+        GenerateStringKey: "password"
+        PasswordLength: 15
+        ExcludePunctuation: true
+        IncludeSpace: false
+        RequireEachIncludedType: true   
+Outputs:
+  PrivateUpstreamBrokerEndpoints:
+    Description: AMQP endpoint for private upstream broker for NLB
+    Value: !Join 
+      - ','
+      - !GetAtt MyPrivateUpstreamBroker.AmqpEndpoints
+  UpstreamVPCPublicSubnetId:
+    Description: Subnet Id of the Public Subnet for the upstream Broker
+    Value: !GetAtt UpstreamVPCPublicSubnet.SubnetId
+    Export:
+      Name: !Sub '${Stage}:UpstreamVPCPublicSubnetId'
+  UpstreamVPCId:
+    Description: VPC Id upstream Broker
+    Value: !GetAtt UpstreamVPC.VpcId
+    Export:
+      Name: !Sub '${Stage}:UpstreamVPCId'
+  PrivateDownstreamBrokerEndpoints:
+    Description: AMQP endpoint for private downstream broker for NLB
+    Value: !Join 
+      - ','
+      - !GetAtt MyPrivateDownstreamBroker.AmqpEndpoints
+  EC2Instance:
+    Description: EC2 instance in the downstream VPC public subnet
+    Value: !Ref MyDownstreamEC2Instance
+  UpstreamVPCDefaultSecurityGroupId:
+    Description: Default Security Group for the Upstream VPC
+    Value: !GetAtt UpstreamVPC.DefaultSecurityGroup
+    Export:
+      Name: !Sub '${Stage}:UpstreamVPCDefaultSecurityGroupId'
+  UpstreamVPCCIDRBlock:
+    Description: CIDR Block for the Upstream VPC
+    Value: !Ref UpstreamVPCCIDRBlock
+    Export:
+      Name: !Sub '${Stage}:UpstreamVPCCIDRBlock'

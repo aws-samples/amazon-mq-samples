@@ -10,3 +10,4 @@ Currently, the following samples are hosted in this repository:
 | Topic                                                                                                                            | Tutorial/Blog |
 |----------------------------------------------------------------------------------------------------------------------------------|---------------|
 | [JMS 2.0 Transactions in ActiveMQ](https://github.com/aws-samples/amazon-mq-samples/tree/main/activemq-samples/jms-transactions) | [Implementing transactions using JMS2.0 in Amazon MQ for ActiveMQ](https://aws.amazon.com/blogs/compute/implementing-transactions-using-jms2-0-in-amazon-mq-for-activemq/)    |
+| [Federation for RabbitMQ Private Brokers](https://github.com/aws-samples/amazon-mq-samples/tree/main/rabbitmq-samples/federation-sample) | [Implementing federation on Amazon MQ for RabbitMQ Private Brokers]()    |

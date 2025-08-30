@@ -1,0 +1,32 @@
+{
+  "name": "amazon-mq-rabbitmq-cognito-oauth2",
+  "version": "1.0.0",
+  "description": "CDK project for Amazon MQ RabbitMQ with Cognito OAuth2 integration",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "cdk": "cdk",
+    "deploy": "cdk deploy",
+    "synth": "cdk synth"
+  },
+  "keywords": [
+    "aws",
+    "cdk",
+    "rabbitmq",
+    "cognito",
+    "oauth2"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-cdk-lib": "^2.100.0",
+    "constructs": "^10.0.0",
+    "source-map-support": "^0.5.21",
+    "ts-node": "^10.9.2"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "typescript": "^4.9.0"
+  }
+}

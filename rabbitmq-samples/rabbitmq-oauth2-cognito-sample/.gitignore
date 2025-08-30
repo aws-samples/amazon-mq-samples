@@ -1,0 +1,6 @@
+node_modules/
+*.js
+*.d.ts
+cdk.out/
+.env
+package-lock.json

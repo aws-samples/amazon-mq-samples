@@ -45,7 +45,7 @@ export class RabbitMqOAuth2TestStack extends cdk.Stack {
 
     this.userPoolDomain = this.userPool.addDomain('UserPoolDomain', {
       cognitoDomain: {
-        domainPrefix: `${props.domainPrefix}-${this.node.addr}`,
+        domainPrefix: `${props.domainPrefix}-${Math.random().toString(36).substring(2, 8)}`,
       },
     });
 

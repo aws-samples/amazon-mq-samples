@@ -1,8 +1,8 @@
-# RabbitMQ OAuth2 with AWS Cognito
+# Amazon MQ for RabbitMQ OAuth2 Integration With Amazon Cogntio
 
-This CDK project deploys the prerequisite AWS resources needed to test RabbitMQ OAuth2 integration.
+This CDK project deploys the prerequisite AWS resources needed to test Amazon MQ for RabbitMQ OAuth2 feature as described in the [AWS documentation](https://docs.aws.amazon.com/amazon-mq/latest/developer-guide/oauth-tutorial.html).
 
-This stack creates the Cognito User Pool and related OAuth2 resources required before configuring RabbitMQ with OAuth2 authentication and authorization.
+This stack creates the Cognito User Pool and related OAuth2 resources required before configuring Amazon MQ for RabbitMQ with OAuth2 authentication and authorization.
 
 ## Step 0: Prerequisites
 
@@ -36,15 +36,15 @@ export RABBITMQ_OAUTH2_MANAGEMENT_CONSOLE_TEST_USER_PASSWORD="your-password"
 If you already have an existing RabbitMQ broker, you can specify the callback and logout URLs:
 
 ```bash
-export RABBITMQ_OAUTH2_CALLBACK_URLS="https://your-rabbitmq-host/js/oidc-oauth/login-callback.html"
-export RABBITMQ_OAUTH2_LOGOUT_URLS="https://your-rabbitmq-host/js/oidc-oauth/logout-callback.html"
+export RABBITMQ_OAUTH2_CALLBACK_URLS="https://b-your-broker-id.region.on.aws/js/oidc-oauth/login-callback.html"
+export RABBITMQ_OAUTH2_LOGOUT_URLS="https://b-your-broker-id.region.on.aws/js/oidc-oauth/logout-callback.html"
 ```
 
 For multiple brokers, separate URLs with commas:
 
 ```bash
-export RABBITMQ_OAUTH2_CALLBACK_URLS="https://rabbitmq-host-1/js/oidc-oauth/login-callback.html,https://rabbitmq-host-2/js/oidc-oauth/login-callback.html"
-export RABBITMQ_OAUTH2_LOGOUT_URLS="https://rabbitmq-host-1/js/oidc-oauth/logout-callback.html,https://rabbitmq-host-2/js/oidc-oauth/logout-callback.html"
+export RABBITMQ_OAUTH2_CALLBACK_URLS="https://b-<broker-id-1>.<region>.on.aws/js/oidc-oauth/login-callback.html,https://b-<broker-id-2>.<region>.on.aws/js/oidc-oauth/login-callback.html"
+export RABBITMQ_OAUTH2_LOGOUT_URLS="https://b-<broker-id-1>.<region>.on.aws/js/oidc-oauth/logout-callback.html,https://b-<broker-id-2>.<region>.on.aws/js/oidc-oauth/logout-callback.html"
 ```
 
 If not provided, placeholder URLs will be used (see Step 5 to update them later).
@@ -54,7 +54,7 @@ If not provided, placeholder URLs will be used (see Step 5 to update them later)
 The password must meet [Cognito's password policy requirements](https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-settings-policies.html):
 - Minimum 8 characters
 - At least one uppercase letter
-- At least one lowercase letter  
+- At least one lowercase letter
 - At least one number
 - At least one special character
 
@@ -75,38 +75,38 @@ The deployment takes approximately 2-3 minutes.
 
 ## Step 4: Retrieve the outputs
 
-Once deployment is complete, the stack will output the following values needed for configuring RabbitMQ:
+Once deployment is complete, the stack will output the following values needed for configuring a Amazon MQ for RabbitMQ broker:
 
 - **UserPoolId**: The ID of the Cognito User Pool
-- **UserPoolDomainName**: The domain name for OAuth2 endpoints
-- **AmqpAppClientId**: Client ID for AMQP connections (with secret)
+- **AmqpAppClientId**: Client ID for AMQP connections
 - **AmqpAppClientSecret**: Client secret for AMQP connections
-- **ManagementConsoleAppClientId**: Client ID for management console access (no secret)
-- **JwksUri**: URI for token validation
-- **TokenEndpoint**: OAuth2 token endpoint
+- **ManagementConsoleAppClientId**: Client ID for RabbitMQ management console access (no secret)
+- **JwksUri**: URI to fetch signing keys for token validation
+- **Issuer**: URI of token issuer
+- **TokenEndpoint**: Endpoint to fetch OAuth2 tokens
 
 ## Step 5: Update callback URLs (if using placeholder URLs)
 
 If you didn't specify callback URLs in Step 2, you must update them after creating your RabbitMQ broker for management console OAuth2 login to work:
 
-1. Create your RabbitMQ broker with OAuth2 configuration
+1. Create your RabbitMQ broker with OAuth2 configuration following the [AWS tutorial](https://docs.aws.amazon.com/amazon-mq/latest/developer-guide/oauth-tutorial.html)
 2. Go to the Cognito console and select the **RabbitMqOAuth2TestUserPool** user pool
 3. Navigate to **App clients** → **RabbitMqManagementConsoleAppClient** → **Login pages** → **Allowed callback URLs**
-4. Replace the placeholder URLs with your actual RabbitMQ host URLs
+4. Replace the placeholder URLs with your actual broker URLs
 
 ## Resources Created
 
-- **Cognito User Pool**: Manages user authentication
+- **Cognito User Pool**: Manages user authentication and authorization
 - **Cognito User Pool Domain**: Provides OAuth2 endpoints with unique identifier
 - **Resource Server**: Defines RabbitMQ-specific OAuth2 scopes
 - **AMQP App Client**: Configured for client credentials flow (with secret)
-- **Management Console App Client**: Configured for authorization code flow (no secret)
-- **Test User**: Created with specified username and password
-- **OAuth2 Scopes**: 
-  - `rabbitmq/read:all` - Read permission for vhosts and queues
-  - `rabbitmq/write:all` - Write permission for vhosts and queues
-  - `rabbitmq/configure:all` - Configure permission for vhosts and queues
-  - `rabbitmq/tag:administrator` - Administrator tag permission
+- **RabbitMQ Management Console App Client**: Configured for authorization code flow (no secret)
+- **Test User for Management Console**: Created with specified username and password
+- **Cognito OAuth2 Custom Scopes**:
+  - `rabbitmq/read:all` - Read permission for all vhosts and queues (corresponds to rabbitmq.read:*/*)
+  - `rabbitmq/write:all` - Write permission for all vhosts and queues (corresponds to rabbitmq.write:*/*)
+  - `rabbitmq/configure:all` - Configure permission for all vhosts and queues (corresponds to rabbitmq.configure:*/*)
+  - `rabbitmq/tag:administrator` - Administrator permissions
 
 ## Cleanup
 

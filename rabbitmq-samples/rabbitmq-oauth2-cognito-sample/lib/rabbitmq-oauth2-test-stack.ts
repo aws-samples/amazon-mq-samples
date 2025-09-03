@@ -34,7 +34,7 @@ export class RabbitMqOAuth2TestStack extends cdk.Stack {
 
     const defaultCallbackUrls = [`https://b-<your-broker-id>.${this.region}.on.aws/js/oidc-oauth/login-callback.html`];
     const defaultLogoutUrls = [`https://b-<your-broker-id>.${this.region}.on.aws/js/oidc-oauth/logout-callback.html`];
-    
+
     const callbackUrls = props.callbackUrls || defaultCallbackUrls;
     const logoutUrls = props.logoutUrls || defaultLogoutUrls;
 
@@ -45,7 +45,7 @@ export class RabbitMqOAuth2TestStack extends cdk.Stack {
 
     this.userPoolDomain = this.userPool.addDomain('UserPoolDomain', {
       cognitoDomain: {
-        domainPrefix: `${props.domainPrefix}-${this.node.addr}`,
+        domainPrefix: `${props.domainPrefix}-${Math.random().toString(36).substring(2, 8)}`,
       },
     });
 
@@ -180,6 +180,12 @@ export class RabbitMqOAuth2TestStack extends cdk.Stack {
       value: `https://${this.userPoolDomain.domainName}.auth.${this.region}.amazoncognito.com/oauth2/token`,
       description: 'OAuth2 token endpoint',
       exportName: `${this.stackName}-TokenEndpoint`,
+    });
+
+    new cdk.CfnOutput(this, 'Issuer', {
+      value: `https://cognito-idp.${this.region}.amazonaws.com/${this.userPool.userPoolId}`,
+      description: 'OAuth2 issuer URL',
+      exportName: `${this.stackName}-Issuer`,
     });
   }
 }

@@ -103,9 +103,9 @@ If you didn't specify callback URLs in Step 2, you must update them after creati
 - **RabbitMQ Management Console App Client**: Configured for authorization code flow (no secret)
 - **Test User for Management Console**: Created with specified username and password
 - **Cognito OAuth2 Custom Scopes**:
-  - `rabbitmq/read:all` - Read permission for all vhosts and queues (corresponds to rabbitmq.read:*/*)
-  - `rabbitmq/write:all` - Write permission for all vhosts and queues (corresponds to rabbitmq.write:*/*)
-  - `rabbitmq/configure:all` - Configure permission for all vhosts and queues (corresponds to rabbitmq.configure:*/*)
+  - `rabbitmq/read:all` - Read permission for all vhosts and queues (corresponds to `rabbitmq.read:*/*`)
+  - `rabbitmq/write:all` - Write permission for all vhosts and queues (corresponds to `rabbitmq.write:*/*`)
+  - `rabbitmq/configure:all` - Configure permission for all vhosts and queues (corresponds to `rabbitmq.configure:*/*`)
   - `rabbitmq/tag:administrator` - Administrator permissions
 
 ## Cleanup

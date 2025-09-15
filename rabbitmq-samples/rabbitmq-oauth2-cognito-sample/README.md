@@ -36,15 +36,15 @@ export RABBITMQ_OAUTH2_MANAGEMENT_CONSOLE_TEST_USER_PASSWORD="your-password"
 If you already have an existing RabbitMQ broker, you can specify the callback and logout URLs:
 
 ```bash
-export RABBITMQ_OAUTH2_CALLBACK_URLS="https://b-your-broker-id.region.on.aws/js/oidc-oauth/login-callback.html"
-export RABBITMQ_OAUTH2_LOGOUT_URLS="https://b-your-broker-id.region.on.aws/js/oidc-oauth/logout-callback.html"
+export RABBITMQ_OAUTH2_CALLBACK_URLS="https://<broker-id>.mq.<region>.on.aws/js/oidc-oauth/login-callback.html"
+export RABBITMQ_OAUTH2_LOGOUT_URLS="https://<broker-id>.mq.<region>.on.aws/js/oidc-oauth/logout-callback.html"
 ```
 
 For multiple brokers, separate URLs with commas:
 
 ```bash
-export RABBITMQ_OAUTH2_CALLBACK_URLS="https://b-<broker-id-1>.<region>.on.aws/js/oidc-oauth/login-callback.html,https://b-<broker-id-2>.<region>.on.aws/js/oidc-oauth/login-callback.html"
-export RABBITMQ_OAUTH2_LOGOUT_URLS="https://b-<broker-id-1>.<region>.on.aws/js/oidc-oauth/logout-callback.html,https://b-<broker-id-2>.<region>.on.aws/js/oidc-oauth/logout-callback.html"
+export RABBITMQ_OAUTH2_CALLBACK_URLS="https://<broker-id-1>.mq.<region>.on.aws/js/oidc-oauth/login-callback.html,https://<broker-id-2>.mq.<region>.on.aws/js/oidc-oauth/login-callback.html"
+export RABBITMQ_OAUTH2_LOGOUT_URLS="https://<broker-id-1>.mq.<region>.on.aws/js/oidc-oauth/logout-callback.html,https://<broker-id-2>.mq.<region>.on.aws/js/oidc-oauth/logout-callback.html"
 ```
 
 If not provided, placeholder URLs will be used (see Step 5 to update them later).

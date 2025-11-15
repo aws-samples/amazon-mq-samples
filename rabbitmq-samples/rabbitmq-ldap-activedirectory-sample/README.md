@@ -23,12 +23,17 @@ This stack creates the AWS Managed Microsoft Active Directory, LDAP users and gr
 
 ## Step 2: Build and deploy the stack
 
-1. Build the project (this automatically generates certificates):
+1. Set your AWS region (required for certificate generation):
+   ```bash
+   export AWS_DEFAULT_REGION=us-west-2
+   ```
+
+2. Build the project (this automatically generates certificates):
    ```bash
    npm run build
    ```
 
-2. Deploy the CDK stack:
+3. Deploy the CDK stack:
    ```bash
    cdk deploy
    ```

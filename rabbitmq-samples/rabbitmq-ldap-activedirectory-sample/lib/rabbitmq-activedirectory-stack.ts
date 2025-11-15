@@ -289,12 +289,12 @@ export class RabbitMqActiveDirectoryStack extends cdk.Stack {
     });
 
     new cdk.CfnOutput(this, 'RabbitMqAdministratorsGroupDn', {
-      value: 'CN=RabbitMqAdministrators,CN=Users,DC=rabbitmq-ldap,DC=tutorial,DC=local',
+      value: 'CN=RabbitMqAdministrators,OU=Users,OU=rabbitmq-ldap,DC=rabbitmq-ldap,DC=tutorial,DC=local',
       description: 'Distinguished Name (DN) of RabbitMqAdministrators group for administrator permissions',
     });
 
     new cdk.CfnOutput(this, 'RabbitMqMonitoringUsersGroupDn', {
-      value: 'CN=RabbitMqMonitoringUsers,CN=Users,DC=rabbitmq-ldap,DC=tutorial,DC=local',
+      value: 'CN=RabbitMqMonitoringUsers,OU=Users,OU=rabbitmq-ldap,DC=rabbitmq-ldap,DC=tutorial,DC=local',
       description: 'Distinguished Name (DN) of RabbitMqMonitoringUsers group for management console access',
     });
 

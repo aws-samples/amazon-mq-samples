@@ -67,6 +67,18 @@ Once deployment is complete, the stack will output values needed for configuring
 - **CertificateArn**: IAM Certificate ARN for `*.elb.{region}.amazonaws.com`
 - **AdminPasswordArn**: Active Directory admin password (auto-generated, Secrets Manager ARN)
 
+## Security Restrictions
+
+> [!IMPORTANT]
+> **The IAM role (AmazonMqAssumeRoleArn stack output) includes security conditions that restrict access to:**
+> - **Account**: Only Amazon MQ brokers in the same AWS account can assume the role (`aws:SourceAccount`)
+> - **Region**: Only Amazon MQ brokers in the same AWS region as the stack can assume the role (`aws:SourceArn`)
+>
+> [!CRITICAL]
+> **🚨 BROKER NAMING REQUIREMENT: Broker name MUST start with `rabbitmq-ldap-test-` to assume the role (`aws:SourceArn`) 🚨**
+>
+> **Note**: The broker naming restriction is included as an example of how to restrict where this role can be used within Amazon MQ, such as limiting access to brokers following a certain naming pattern.
+
 ## Certificate Generation
 
 A CA certificate and server certificate for `*.elb.{region}.amazonaws.com` are automatically generated via the `generate-certs.sh` prebuild script during deployment. The script detects the AWS region from `AWS_DEFAULT_REGION` environment variable.
@@ -79,13 +91,6 @@ The stack automatically creates three LDAP users in Active Directory:
 - **RabbitMqAmqpUser**: Member of `RabbitMqAdministrators` group for AMQP connections with full administrative permissions
 
 **Note**: The custom resource for user creation always reports success to avoid re-creating the Active Directory (which takes 20-30 minutes) if user creation fails. Check CloudWatch logs for the `CreateADUsersFunction` Lambda function if users are not created properly.
-
-## Security Restrictions
-
-The IAM role includes security conditions that restrict access to:
-- **Account**: Only Amazon MQ brokers in the same AWS account can assume the role (`aws:SourceAccount`)
-- **Region**: Only Amazon MQ brokers in the same AWS region as the stack can assume the role (`aws:SourceArn`)
-- **Broker naming**: Broker name must start with `rabbitmq-ldap-test-` to assume the role (`aws:SourceArn`)
 
 ## Accessing RabbitMQ
 

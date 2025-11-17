@@ -73,9 +73,7 @@ Once deployment is complete, the stack will output values needed for configuring
 > **The IAM role (AmazonMqAssumeRoleArn stack output) includes security conditions that restrict access to:**
 > - **Account**: Only Amazon MQ brokers in the same AWS account can assume the role (`aws:SourceAccount`)
 > - **Region**: Only Amazon MQ brokers in the same AWS region as the stack can assume the role (`aws:SourceArn`)
->
-> [!CRITICAL]
-> **🚨 BROKER NAMING REQUIREMENT: Broker name MUST start with `rabbitmq-ldap-test-` to assume the role (`aws:SourceArn`) 🚨**
+> - **🚨 BROKER NAMING REQUIREMENT: Broker name MUST start with `rabbitmq-ldap-test-` to assume the role (`aws:SourceArn`) 🚨**
 >
 > **Note**: The broker naming restriction is included as an example of how to restrict where this role can be used within Amazon MQ, such as limiting access to brokers following a certain naming pattern.
 

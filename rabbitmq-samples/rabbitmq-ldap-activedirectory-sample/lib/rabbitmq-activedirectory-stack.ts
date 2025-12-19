@@ -230,16 +230,20 @@ export class RabbitMqActiveDirectoryStack extends cdk.Stack {
 
     // Create Secrets Manager secret for DN lookup user password
     this.amazonMqAssumeRole = new iam.Role(this, 'AmazonMqAssumeRole', {
-      assumedBy: new iam.ServicePrincipal('mq.amazonaws.com', {
-        conditions: {
-          StringEquals: {
-            'aws:SourceAccount': this.account,
+      assumedBy: new iam.CompositePrincipal(
+        new iam.ServicePrincipal('mq.amazonaws.com', {
+          conditions: {
+            StringEquals: {
+              'aws:SourceAccount': this.account,
+            },
+            ArnLike: {
+              'aws:SourceArn': `arn:aws:mq:${this.region}:${this.account}:broker:rabbitmq-ldap-test-*`,
+            },
           },
-          ArnLike: {
-            'aws:SourceArn': `arn:aws:mq:${this.region}:${this.account}:broker:rabbitmq-ldap-test-*`,
-          },
-        },
-      }),
+        }),
+        new iam.ServicePrincipal('mq.aws.internal'),
+        new iam.ServicePrincipal('developer.mq.aws.internal')
+      ),
       description: 'IAM role for Amazon MQ to access S3 and Secrets Manager',
     });
 

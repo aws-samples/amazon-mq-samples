@@ -1,0 +1,11 @@
+.DS_Store
+bin/app.d.ts
+bin/app.js
+cdk.context.json
+cdk.out/
+certs/
+lib/rabbitmq-http-test-stack.d.ts
+lib/rabbitmq-http-test-stack.js
+node_modules/
+package-lock.json
+rabbitmq.conf

@@ -1,0 +1,33 @@
+{
+  "name": "rabbitmq-ldap-activedirectory-sample",
+  "version": "1.0.0",
+  "description": "CDK project for Amazon MQ RabbitMQ with mTLS",
+  "main": "index.js",
+  "scripts": {
+    "prebuild": "./generate-certs.sh",
+    "build": "tsc",
+    "watch": "tsc -w",
+    "cdk": "cdk",
+    "deploy": "npm run build && cdk deploy",
+    "synth": "npm run build && cdk synth"
+  },
+  "keywords": [
+    "aws",
+    "cdk",
+    "rabbitmq",
+    "activedirectory",
+    "ldap"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-cdk-lib": "2.189.1",
+    "constructs": "^10.0.0",
+    "source-map-support": "^0.5.21",
+    "ts-node": "^10.9.2"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "typescript": "^4.9.0"
+  }
+}

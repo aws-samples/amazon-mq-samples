@@ -2,6 +2,8 @@
 
 CDK stack deploying Django-based HTTP authentication backend for RabbitMQ with mutual TLS using Application Load Balancer.
 
+This stack deploys the prerequisite AWS resources needed to test Amazon MQ for RabbitMQ HTTP feature as described in the [AWS documentation](https://docs.aws.amazon.com/amazon-mq/latest/developer-guide/rabbitmq-http-tutorial.html).
+
 ## Architecture
 
 ```
@@ -18,7 +20,7 @@ RabbitMQ → [mTLS] → ALB (HTTPS:443 with mTLS) → EC2 → Gunicorn → Djang
 ### Step 1: Install dependencies
 Navigate to the project directory:
 ```bash
-cd rabbitmq-http-auth-stack
+cd rabbitmq-http-sample
 ```
 
 Install dependencies:
@@ -32,12 +34,12 @@ Set your AWS region (required for certificate generation):
 export AWS_DEFAULT_REGION=us-west-2
 ```
 
-Build the project (this automatically generates certificates):
+Build the project:
 ```bash
 npm run build
 ```
 
-Deploy the CDK stack:
+Deploy the CDK stack (this automatically generates certificates):
 ```bash
 cdk deploy
 ```
@@ -46,10 +48,10 @@ The deployment takes approximately 5 minutes for EC2 initialization.
 
 ## Stack Outputs
 
-Once deployment is complete, the stack will output values needed for configuring Amazon MQ for RabbitMQ broker:
+Once deployment is complete, the stack will output values needed for configuring Amazon MQ for RabbitMQ broker as described in the [AWS tutorial](https://docs.aws.amazon.com/amazon-mq/latest/developer-guide/rabbitmq-http-tutorial.html):
 
 **RabbitMQ HTTP Authentication Configuration**
-- **ssl_options.sni**: Please add `auth_http.ssl_options.sni=test.amazonaws.com` to RabbitMQ config to make this test stack work.
+- **SslOptionsSni**: Please add `auth_http.ssl_options.sni=test.amazonaws.com` to RabbitMQ config to make this test stack work.
 - **HttpAuthUserPath**: Full URL for user authentication endpoint
 - **HttpAuthVhostPath**: Full URL for vhost authorization endpoint
 - **HttpAuthResourcePath**: Full URL for resource authorization endpoint
@@ -86,6 +88,7 @@ Passwords can be retrieved using the AWS CLI:
 aws secretsmanager get-secret-value --secret-id <PasswordArn> --query SecretString --output text
 ```
 
+Sample RabbitMQ configuration and commands to call the management API with the retrieved passwords are provided in the [AWS tutorial](https://docs.aws.amazon.com/amazon-mq/latest/developer-guide/rabbitmq-http-tutorial.html).
 
 ## Test
 

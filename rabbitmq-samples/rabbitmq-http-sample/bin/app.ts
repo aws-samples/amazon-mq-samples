@@ -40,7 +40,7 @@ try {
 
 const app = new cdk.App();
 
-new RabbitMqHttpTestStack(app, 'RabbitMqHttpAuthElbStack', {
+new RabbitMqHttpTestStack(app, 'RabbitMqHttpSampleStack', {
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: region

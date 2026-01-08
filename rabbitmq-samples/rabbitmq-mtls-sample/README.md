@@ -1,6 +1,6 @@
 # Amazon MQ for RabbitMQ mTLS Sample CDK
 
-This CDK project deploys the prerequisite AWS resources needed to test Amazon MQ for RabbitMQ mTLS or SSL feature as described in the [AWS documentation](https://docs.aws.amazon.com/amazon-mq/latest/developer-guide/rabbitmq-ldap-tutorial.html).
+This CDK project deploys the prerequisite AWS resources needed to test Amazon MQ for RabbitMQ mTLS or SSL feature as described in the AWS documentation for [SSL plugin](https://docs.aws.amazon.com/amazon-mq/latest/developer-guide/rabbitmq-ssl-tutorial.html) and [mTLS](https://docs.aws.amazon.com/amazon-mq/latest/developer-guide/rabbitmq-mtls-tutorial.html).
 
 This stack creates the supporting infrastructure required before configuring Amazon MQ for RabbitMQ to use mTLS.
 
